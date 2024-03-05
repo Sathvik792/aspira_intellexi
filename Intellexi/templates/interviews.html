@@ -1,0 +1,113 @@
+{% extends 'base.html' %} {% block content %}
+<style>
+  table {
+    text-align: center;
+    text-wrap: nowrap;
+  }
+  .action-icons {
+    max-width: 100px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 0px 10px;
+  }
+  .action-icons div {
+    padding: 3px 15px;
+    margin-left: 30%;
+  }
+  table th {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  @media (min-width: 700px) {
+    .container,
+    .container-md,
+    .container-sm {
+      max-width: 99%;
+    }
+  }
+  td:hover {
+    cursor: pointer;
+  }
+</style>
+
+<main style="max-width: 1000px; margin: auto">
+  <div class="container">
+    <div class="row mb-3">
+      <div class="col-12 text-end">
+        <a href="/schedule_interview"
+          ><button class="btn btn-primary">schedule Interview</button></a
+        >
+      </div>
+    </div>
+    <div class="table-container table-bg">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th class="fs-5">Docment Name</th>
+            <th class="fs-5">Interview Time</th>
+            <th class="fs-5">Extracted Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for each in interviews %}
+          <tr id="doc{{each._id}}">
+            <td class="fs-5" onclick="goTo('{{each._id}}')">
+              {{each.file_name.split("\\")[-1]}}
+            </td>
+            <td class="fs-5" onclick="goTo('{{each._id}}')">
+              {{each.interviewtime}}
+            </td>
+                 <td class="fs-5" onclick="goTo('{{each._id}}')">
+            {% if each.extracted_data %}
+                  True
+                {% else %}
+                False
+                {% endif %}
+
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+  function goTo(id) {
+    window.location.href = `/interview/${id}`;
+  }
+
+  function downloadFile(id) {
+    window.location.href = `/download_multiple_files/${id}/`;
+  }
+
+  function deleteFile(id) {
+    if (confirm("do you want to delete the file?")) {
+      fetch(`/delete_file/${id}/`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status) {
+            document.getElementById(`doc${id}`).style.display = "none";
+          } else {
+            alert("not deleted");
+          }
+        });
+    }
+  }
+  var socket = io.connect("http://" + document.domain + ":" + location.port, {
+    path: "/socket.io",
+    transports: ["websocket"],
+  });
+
+  socket.on("update", function (data) {
+    if (data.status) {
+      alert("Formatting data completed now you can view the formatted data.");
+    } else {
+      alert("Theres an error formatting the data");
+    }
+  });
+</script>
+{% endblock %}

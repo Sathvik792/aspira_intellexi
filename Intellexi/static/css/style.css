@@ -1,0 +1,365 @@
+*{
+    margin:0;
+    padding: 0;
+    font-family: 'Poppins',sans-serif;
+    box-sizing: border-box;
+}
+
+body{
+    background: #efefff;
+    min-width: 400px;
+}
+
+.hero{
+    width:100%;
+    min-height:15vh;
+    background-color: #fff;
+    color: #120f0f;
+}
+
+nav{
+    background: whitesmoke;
+    width: 100%;
+    padding:7px 10%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.logo{
+    min-width:120px;
+    width:250px;
+    height:40px;
+}
+
+.user-pic{
+    width:40px;
+    height:40px;
+    border: radius 50%;
+    cursor: pointer;
+    margin-left:30px;
+}
+
+nav ul{
+    width:100%;
+    text-align: right;
+}
+nav ul li{
+    display: inline-block;
+    list-style: none;
+    margin:10px 20px;
+}
+
+nav ul li a{
+    color:#120f0f;
+    text-decoration: none;
+}
+
+.show {
+    display: block;
+}
+
+.sub-menu-wrap {
+    position: absolute;
+    top: 100%;
+    max-width: 220px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s;
+    display: none;
+}
+
+.sub-menu-wrap.open-menu {
+    max-height: 400px;
+    display: block;
+    right: 23%;
+    z-index: 10;
+}
+.sub-menu{
+    background-color: #fff;
+    padding: 20px;
+}
+.user-info{
+    display: flex;
+    align-items: center;
+}
+.user-info h3{
+    font-weight:500;   
+}
+.user-info img{
+    width:30px;
+    border-radius: 50%;
+    margin-right: 15px;
+    
+}
+.sub-menu hr{
+    border: 0;
+    height: 1px;
+    width:100%;
+    background-color: #ccc;
+}
+
+.sub-menu-link{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color:#525252;
+    z-index: 1;
+}
+
+.sub-menu-link p{
+    width:100%;
+}
+.sub-menu-link a{
+    width:40px;
+    background: #e5e5e5;
+    border-radius: 50%;
+    /* padding:8px; */
+}
+
+.sub-menu-link:hover p{
+    font-weight: 600;
+}
+
+nav{
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    background: #f8f8f8;
+
+} 
+.additional-nav ul {
+    display: flex;
+    justify-content: space-evenly;
+    list-style: none;
+    margin: 0px;
+    font-weight: bold;
+}
+.additional-nav li {
+    margin-right: 20px;
+}
+.nav-item {
+    margin-right: 20px;
+}
+.add-nav {
+    display: flex;
+    list-style: none;
+    padding: 0;
+}
+.nav-list{
+    display: flex;
+}
+.nav-item{
+    padding-bottom:15px;
+    white-space: nowrap;
+}
+
+.nav-item:hover a{
+    color:blue;
+
+}
+.nav-item:not(.active):hover{
+    border-bottom: 3px solid blue;
+    color: blue;
+}
+.nav-item.active a {
+    color: blue;
+}
+
+
+
+/* Form */
+ 
+.custom-form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+.text-field{
+    background: #efefff;
+    border:none;
+}
+label{
+    font-size:14px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+/* Adjust styles for smaller screens */
+@media (max-width: 768px) {
+    .custom-form {
+        padding: 10px;
+    }
+}
+
+@media (min-width: 768px){
+.container, .container-md, .container-sm {
+max-width: 660px;
+}
+}
+
+.container{
+margin-top: 44px;
+} 
+
+form.custom-form {
+padding: 20px; 
+}
+
+/* Apply these styles to the form groups (label + input) */
+.form-group {
+margin-bottom: 20px; /* Adjust the margin between label and input */
+}
+
+/* Optionally, you can adjust the overall margin or padding of the container */
+
+form .custom-form {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+margin: auto; /* This will center the form horizontally */
+max-width: 650px; /* Set a max-width to limit the form width */
+}
+
+
+/* Style for Save button */
+.save-btn {
+font-weight: 500;
+background-color: #3d16d8; /* Blue color */
+color: #fff;
+padding: 10px 35px;
+border: none;
+border-radius: 20px; /* Adjust the border-radius as needed */
+cursor: pointer;
+}
+
+.query-btn {
+font-weight: 500;
+background-color: #3d16d8; /* Blue color */
+color: #fff;
+padding: 10px 35px;
+border: none;
+border-radius: 20px; /* Adjust the border-radius as needed */
+cursor: pointer;
+}
+
+/* Style for Cancel button */
+.cancel-btn {
+font-weight: 500;
+background-color: #f8f9fa; /* Gray background */
+padding: 10px 35px;
+border: 1px solid #3d16d8; /* Blue border */
+border-radius: 20px; /* Adjust the border-radius as needed */
+cursor: pointer;
+margin-right: 10px; /* Adjust the margin between Save and Cancel buttons */
+}
+.cancel-btn:hover{
+color: #2704b0;
+}
+.form-buttons{
+display:flex;
+justify-content: flex-end;
+
+}
+.save-btn:hover {
+background-color: #1a019c; /* Brighter shade on hover */
+}
+.blue-bell{
+    color: blue; 
+    font-size: 26px;
+    padding-top:5px;
+}
+
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-pic {
+    width: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.profile-text {
+    margin-right:0;
+    display: flex;
+    align-items: center;
+    padding-top:4px;
+    font-weight: 300;
+    cursor: pointer;
+}
+
+/* table styles */
+.table-container {
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    text-align: center;
+    border:none;
+}
+
+.table-bg{
+     background-color: white;
+padding: 20px;
+border-radius: 10px;
+margin-bottom: 20px;
+}
+
+/* Drag and drop */
+
+.drag-drop-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.drag-drop-area:hover {
+    border-color: blue;
+}
+
+/* Hide the default file input */
+#fileInput {
+    display: none;
+}
+
+/* Style for the input tag (adjust as needed) */
+#fileInputLabel {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+.quick-shift {
+    margin-top:20px;
+display: flex;
+gap: 10px; /* Adjust the gap value as needed */
+}
+
+.quick-shift div {
+padding: 20px  30px 10px; 
+}
+
+.selected,.quick-shift div:hover,.quick-shift div:active {
+color:blue;
+border-bottom: 3px solid blue; 
+}
+.output-data{
+height:500px;
+background: #efefff;
+}

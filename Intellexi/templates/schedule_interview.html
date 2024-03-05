@@ -1,0 +1,157 @@
+<!-- home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.success-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 5px solid green;
+}
+
+.popup-content {
+    text-align: center;
+    padding:10px;
+    margin:10px;
+    font-size: 20px;
+}
+
+.close-btn {
+    position: absolute;
+    padding:4px;
+    top: 10px;
+    right: 10px;
+    font-size: 25px;
+    cursor: pointer;
+    color: red;
+}
+
+/* output contet div */
+        .content {
+            display: none;
+            max-width:500px;
+            word-wrap: normal;
+        }
+
+        .content.active-section {
+            display: block;
+            max-width:500px;
+            word-wrap: normal;
+        }
+    .section-label{
+        border-bottom: 3px solid blue;
+    }
+
+</style>
+<!-- <h1>upload docs Page</h1> -->
+<main>
+    <div class="container">
+        <form class="custom-form" id="uploadForm">
+        <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="documentCategory">Select Document</label>
+                        <select type="text" class="form-control text-field" name="documents"
+                            id="document" required >
+                            {% if documents %}
+                              <option value="" class="default-select">select a document </option>
+                                {% for document in documents %}
+                                <option value="{{ document._id }}">{{ document.category_id }} - {{ document.file_path.split("\\")[-1] }}</option>
+                                {% endfor %}
+                            {% else %}
+                            <option value="" class="default-select"> No Available Documents </option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="documentCategory">Interview Time</label>
+                        <input type="datetime-local" class="form-control text-field" name="interviewTime" id="interviewTime" required>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div style="padding-top: 10px;" class="form-buttons">
+                <button class="cancel-btn" onclick="resetAndGoHome(event)">Cancel</button>
+                <button class="save-btn">Save</button>
+            </div>
+        </form>
+    </div>
+    </main>
+    <div class="popup" id="successPopup">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closeSuccessPopup()">&times;</span>
+            <p>Success! Your response has been received and data is stored.</p>
+        </div>
+      </div>
+      <div class="popup" id="fetchingData">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closefetchingDataPopup()">&times;</span>
+            <p><b>Hang on!</b> While we process your request and retrieve your response from the backend.</p>
+        </div>
+      </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+      
+    <script>
+
+    const uploadForm=document.getElementById('uploadForm')
+    uploadForm.addEventListener('submit',(e)=>{
+        e.preventDefault()
+            const formdata=new FormData(uploadForm)
+            fetch("/create_interview", {
+          method: "POST",
+          body: formdata,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status){
+                showSuccessPopup()
+              setInterval(()=>{
+              closeSuccessPopup()
+              },2000)
+              uploadForm.reset()
+            }else{
+                alert("there is an error")
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+    }
+    )
+
+
+    function showSuccessPopup() {
+    document.getElementById('successPopup').style.display = 'block';
+}
+
+function closeSuccessPopup() {
+    document.getElementById('successPopup').style.display = 'none';
+}
+
+
+function resetAndGoHome(event){
+    window.location.reload();
+}
+</script>
+
+{% endblock %}

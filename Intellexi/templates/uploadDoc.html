@@ -1,0 +1,317 @@
+<!-- home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.success-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 5px solid green;
+}
+
+.popup-content {
+    text-align: center;
+    padding:10px;
+    margin:10px;
+    font-size: 20px;
+}
+
+.close-btn {
+    position: absolute;
+    padding:4px;
+    top: 10px;
+    right: 10px;
+    font-size: 25px;
+    cursor: pointer;
+    color: red;
+}
+
+/* output contet div */
+        .content {
+            display: none;
+            max-width:500px;
+            word-wrap: normal;
+        }
+
+        .content.active-section {
+            display: block;
+            max-width:500px;
+            word-wrap: normal;
+        }
+    .section-label{
+        border-bottom: 3px solid blue;
+    }
+
+</style>
+<!-- <h1>upload docs Page</h1> -->
+<main>
+    <div class="container">
+        <form class="custom-form" id="uploadForm">
+            <!-- Your form content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="documentCategory">Document Category Name</label>
+                        <select type="text" class="form-control text-field" name="documentCategory" id="documentCategory" required>
+                            <option value="" class="default-select">Select a Document Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category._id }}" >{{ category.doc_category_name }}</option>
+                                {% endfor %}
+                            </select>    
+
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="drag-drop-area" id="dragDropArea">
+                        <label for="fileInput" id="fileInputLabel">Click or drag and drop files here</label>
+                        <!-- Hidden file input -->
+                        <input type="file" accept=".pdf, .xls, .xlsx" id="fileInput" onchange="handleFiles(event)">
+                    </div>
+                    <div id="fileError" style="color: red;"></div>
+                </div>
+            </div>
+            <div style="padding-top: 10px;" class="form-buttons">
+                <button class="cancel-btn" onclick="resetAndGoHome(event)">Cancel</button>
+                <button class="save-btn">Save</button>
+            </div>
+            <div class="row-sections quick-shift">
+                <div class="section" id="extractedText">Extracted Text</div>
+                <div class="section" id="formattedText">Formatted Text</div>
+
+                <div class="content" id="downloadbtn"><i class="fas fa-download"></i></div>
+            </div>
+            
+                <div class="content" id="extractedData" style="max-height: 500px;overflow-y: scroll;max-width:100%;">
+               
+                </div>
+                
+                <div class="content" id="formattedData" style="max-height: 500px;overflow-y: scroll;max-width:100%;">
+                  
+                </div>
+
+        </form>
+    </div>
+    </main>
+    <div class="popup" id="successPopup">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closeSuccessPopup()">&times;</span>
+            <p>Success! Your response has been received and data is stored.</p>
+        </div>
+      </div>
+      <div class="popup" id="fetchingData">
+        <div class="popup-content">
+            <span class="close-btn" onclick="closefetchingDataPopup()">&times;</span>
+            <p><b>Hang on!</b> While we process your request and retrieve your response from the backend.</p>
+        </div>
+      </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+      
+    <script>
+        const downloadBtn=document.getElementById('downloadbtn')
+            const fileLabel = document.getElementById('fileInputLabel');
+            const extractedText=document.getElementById('extractedText')
+            const formattedText=document.getElementById('formattedText')
+            const extractedData=document.getElementById('extractedData')
+            const formattedData=document.getElementById('formattedData')
+            
+            extractedText.addEventListener('click',(e)=>{
+                extractedData.style.display='block'
+                extractedData.classList.toggle('active-section')
+                formattedData.style.display='none'
+                extractedText.classList.toggle('section-label')
+                formattedText.classList.remove('section-label')
+            })
+            extractedText.addEventListener('dblclick',(e)=>{
+                extractedData.style.display='none'
+                formattedData.style.display='none'
+                
+                formattedText.classList.remove('section-label')
+                extractedText.classList.remove('section-label')
+            })
+            formattedText.addEventListener('dblclick',(e)=>{
+                extractedData.style.display='none'
+                formattedData.style.display='none'
+                extractedText.classList.remove('section-label')
+                formattedText.classList.remove('section-label')
+            })
+            formattedText.addEventListener('click',(e)=>{
+                formattedData.style.display='block'
+
+                formattedData.classList.toggle('active-section')
+                extractedData.style.display='none'
+                formattedText.classList.toggle('section-label')
+                extractedText.classList.remove('section-label')
+
+            })
+      function handleFiles(event) {
+    const fileList = event.target.files;
+    if (fileList.length > 0) {
+        displayFiles(fileList);
+    }
+}
+function updateFileInputLabel(isValid, fileName) {
+    fileLabel.textContent = isValid ? fileName : 'No files selected.';
+    fileLabel.style.border = isValid ? '2px solid green' : '2px solid red';
+}
+
+function displayFiles(files) {
+    if (files.length > 0) {
+        const fileName = files[0].name;
+        updateFileInputLabel(true, fileName);
+    } else {
+        updateFileInputLabel(false);
+    }
+}
+
+    const uploadForm=document.getElementById('uploadForm')
+    uploadForm.addEventListener('submit',(e)=>{
+        e.preventDefault()
+        if(validateForm()){
+            document.getElementById('fileInputLabel').style.border='2px solid green'
+            const formdata=new FormData(uploadForm)
+            formdata.append('file',document.getElementById('fileInput').files[0])
+            fetch("/upload_document", {
+          method: "POST",
+          body: formdata,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status){
+                showSuccessPopup()
+            //   get_extracted_data(data.id)
+            startBackgroundTask(data.id)
+              setInterval(()=>{
+              closeSuccessPopup()
+              },2000)
+              uploadForm.reset()
+              document.getElementById('fileInput').value=''
+              document.getElementById('fileInputLabel').textContent="Click or drag and drop files here<"
+            }else{
+                alert("there is an error")
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+    }else{
+        document.getElementById('fileInputLabel').style.border='2px solid red'
+    }
+
+    })
+
+    function validateForm() {
+        const fileInput = document.getElementById('fileInput');
+        const fileError = document.getElementById('fileError');
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            fileLabel.textContent = 'Please select a file.';
+            return false; 
+        }
+        return true; 
+    }
+
+    function showSuccessPopup() {
+    document.getElementById('successPopup').style.display = 'block';
+}
+
+function closeSuccessPopup() {
+    document.getElementById('successPopup').style.display = 'none';
+}
+
+function showfetchingDataPopup() {
+    document.getElementById('fetchingData').style.display = 'block';
+}
+
+function closefetchingDataPopup() {
+    document.getElementById('fetchingData').style.display = 'none';
+}
+
+    function appendData(data,div_to_append){
+extractedData.innerHTML=''
+Object.keys(data).forEach((doc)=>{
+    console.log(doc)
+    const contractTypeDiv = document.createElement('div');
+    contractTypeDiv.classList.add('contract-type');
+        contractTypeDiv.innerHTML = `<strong>${doc}</strong>`;
+    if (Array.isArray(data[doc])) {
+            data[doc].forEach((record) => {
+                const itemDiv = document.createElement('div');
+                Object.keys(record).forEach((item) => {
+                    itemDiv.innerHTML += `<div><b>${item}</b> : ${record[item]}</div></br>`;
+                });
+                contractTypeDiv.appendChild(itemDiv);
+            });
+        } else {
+            const itemDiv = document.createElement('div');
+            itemDiv.innerHTML = `<div>${doc}: ${data[doc]}</div>`;
+            contractTypeDiv.appendChild(itemDiv);
+        }
+        extractedData.appendChild(contractTypeDiv);
+    
+})
+}
+
+function append_formatted(data){
+formattedData.innerHTML=''
+formattedData.innerText=data
+if (data==undefined || data==''){
+    formattedData.innerHTML=`
+                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Id unde velit recusandae consequuntur! Fugit, fugiat! Quam, omnis dolores, consectetur totam deleniti velit, consequuntur dolore nulla possimus esse quibusdam hic fugit.`
+}
+
+}
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    socket.on('update', function(data) {
+        if(data.status){
+            alert("Formatting data completed now you can view the formatted data.");
+
+        }else{
+            alert("Theres an error formatting the data")
+
+        }
+});
+
+    function startBackgroundTask(id) {
+        showfetchingDataPopup()
+        console.log("iam listenng for the repsone=====")
+
+            if (id){
+        fetch(`/get_extracted_data/${id}`,{method:'POST'})
+        .then((response)=>response.json())
+        .then(data=>{
+            console.log(data)
+            appendData(data.data,'content1')
+            console.log(data.formatted)
+            append_formatted(data.formatted)
+            downloadBtn.classList.remove('content')
+            closefetchingDataPopup()
+        })
+        .catch((error)=>{
+            console.log(error)
+            closefetchingDataPopup()
+        })
+    }
+    }
+
+
+function resetAndGoHome(event){
+    window.location.href='/uploaded_docs'
+}
+</script>
+
+{% endblock %}

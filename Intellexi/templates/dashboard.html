@@ -1,0 +1,263 @@
+<!-- home.html -->
+{% extends 'base.html' %} {% block content %}
+
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  /* styles.css */
+
+  body {
+    font-family: 'Arial', sans-serif;
+  }
+
+  .stat-card {
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .stat-card:hover {
+    transform: scale(1.05);
+  }
+
+  .card-title {
+    color: #333;
+  }
+
+  .card-text {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #007bff;
+  }
+
+  .status-records {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 20px;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    margin-bottom: 10px;
+  }
+
+  .bar {
+    height: 40px;
+    background-color: #3498db;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+</style>
+</head>
+  <div class="container">
+    <div class="row">
+  
+      <!-- Card 1 -->
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Total Documents</h5>
+            <p class="card-text">{{total_documents|default(0)}}</p>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Card 2 -->
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Total Processed</h5>
+            <p class="card-text">{{processed|default(0)}}</p>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Card 3 -->
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Total Agents</h5>
+            <p class="card-text">{{total_agents|default(0)}}</p>
+          </div>
+        </div>
+      </div>
+  
+    </div>
+   <div>
+        <div class="card-body p-4 bg-white">
+          <div class="row align-items-center justify-content-center">
+            <div class="col-6">
+              <h5 class="card-title widget-card-title text-success mb-1">Document Stats</h5>
+            </div>
+            <div class="col-6 d-flex align-items-center justify-content-end">
+              <span
+                class="fs-1 bsb-w-85 bsb-h-85 text-white border border-3 border-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
+                <i class="bi bi-people"></i>
+              </span>
+            </div>
+          </div>
+        <div class="card mt-5 border-0">
+          <div class="card-body">
+            <div class="row gy-4">
+              <div class="col-12">
+                <div class="card bg-primary-subtle text-primary border-0">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-8">
+                        <div class="d-flex align-items-center">
+                          <span
+                            class="fs-6 bsb-w-35 bsb-h-35 text-bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                            <i class="bi bi-twitter-x"></i>
+                          </span>
+                          <div>
+                            <h6 class="m-0 fw-bolder">TOTAL DOCUMENTS</h6>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <h6 class="h3 text-end fw-bolder">{{total_documents|default(0)}}</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="card bg-success-subtle text-success border-0">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-8">
+                        <div class="d-flex align-items-center">
+                          <span
+                            class="fs-6 bsb-w-35 bsb-h-35 text-bg-success rounded-circle d-flex align-items-center justify-content-center me-2">
+                            <i class="bi bi-facebook"></i>
+                          </span>
+                          <div>
+                            <h6 class="m-0 fw-bolder"> PROCESSED</h6>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <h6 class="h3 text-end m-0 fw-bolder">{{processed|default(0)}}</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+                    <div class="col-12">
+                      <div class="card bg-warning-subtle text-warning border-0">
+                        <div class="card-body">
+                          <div class="row align-items-center">
+                            <div class="col-8">
+                              <div class="d-flex align-items-center">
+                                <span
+                                  class="fs-6 bsb-w-35 bsb-h-35 text-bg-warning rounded-circle d-flex align-items-center justify-content-center me-2">
+                                  <i class="bi bi-dribbble"></i>
+                                </span>
+                                <div>
+                                  <h6 class="m-0 fw-bolder">IN PROGRESS</h6>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-4">
+                              <h6 class="h3 text-end m-0 fw-bolder">{{inprogress|default(0)}}</h6>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                <div class="col-12">
+                  <div class="card bg-danger-subtle text-danger border-0">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-8">
+                          <div class="d-flex align-items-center">
+                            <span
+                              class="fs-6 bsb-w-35 bsb-h-35 text-bg-danger rounded-circle d-flex align-items-center justify-content-center me-2">
+                              <i class="bi bi-github"></i>
+                            </span>
+                            <div>
+                              <h6 class="m-0 fw-bolder">ERROR PROCESSING</h6>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-4">
+                          <h6 class="h3 text-end m-0 fw-bolder">{{error|default(0)}}</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+       
+           
+              <div class="col-12">
+                <div class="card bg-info-subtle text-info border-0">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-8">
+                        <div class="d-flex align-items-center">
+                          <span
+                            class="fs-6 bsb-w-35 bsb-h-35 text-bg-info rounded-circle d-flex align-items-center justify-content-center me-2">
+                            <i class="bi bi-youtube"></i>
+                          </span>
+                          <div>
+                            <h6 class="m-0 fw-bolder">TOTAL AGENTS CREATED</h6>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <h6 class="h3 text-end m-0 fw-bolder">{{total_agents|default(0)}}</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> 
+  </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Sample data
+        var data = {
+          labels: ["In Progress", "Confirmed", "Dismissed"],
+          datasets: [
+            {
+              label: "Status Records",
+              backgroundColor: ["#3498db", "#2ecc71", "#e74c3c"],
+              data: [15, 30, 5],
+            },
+          ],
+        };
+
+        // Get the canvas element
+        var ctx = document.getElementById("statusChart").getContext("2d");
+
+        // Create the bar chart
+        var myBarChart = new Chart(ctx, {
+          type: "bar",
+          data: data,
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
+            },
+          },
+        });
+      });
+    </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="{{url_for('static',filename='js/index.js')}}"></script>
+
+
+{% endblock %}

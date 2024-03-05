@@ -1,0 +1,163 @@
+<!-- home.html -->
+{% extends 'base.html' %} {% block content %}
+<style>
+  textarea::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  textarea::-webkit-scrollbar-thumb {
+    background-color: blue;
+}
+
+
+  textarea::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+  }
+  form input[type="text"]{
+    font-size: 14px; 
+}
+
+.is-invalid{
+  border:2px solid red;
+}
+.is-valid{
+  border:2px solid green;
+}
+
+.success-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 5px solid green;
+}
+
+.popup-content {
+    text-align: center;
+    padding:10px;
+    margin:10px;
+    font-size: 20px;
+}
+
+.close-btn {
+    position: absolute;
+    padding:4px;
+    top: 10px;
+    right: 10px;
+    font-size: 25px;
+    cursor: pointer;
+    color: red;
+}
+a{
+    text-decoration: none;
+}
+</style>
+<div class="container">
+  <form class="custom-form" id="docForm">
+    <div class="row">
+      <div class="col-12">
+        <div class="form-group">
+          <label for="documentCategory">Document Category Name</label>
+          <span id="documentCategoryError" class="text-danger"></span>
+          <input type="hidden" value="{{id}}" id="category_id">
+          <input type="hidden" value="{{file_type}}" id="FileType">
+          <input
+            type="text"
+            class="form-control text-field"
+            name="documentCategory"
+            id="documentCategory"
+            value="{{category_name}}"
+            required
+          />
+        </div>
+      </div>
+      {% if file_type == 'pdf' %}
+      <div class="col-12">
+        <div class="form-group">
+          <label for="textArea1">Extraction Ontology</label>
+          <textarea
+            class="form-control text-field"
+            id="pdfextractionOntology"
+            rows="15"
+            spellcheck="false"
+            wrap="on"
+            name="extractionOntology"
+            required
+          >
+{{extraction_ontology}}
+                    </textarea
+          >
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-group">
+          <label for="textArea2">Conversion Ontology</label>
+          <textarea
+            class="form-control text-field"
+            id="pdfconversionOntology"
+            name="conversionOntology"
+            rows="15"
+            spellcheck="false"
+            wrap="on"
+            required
+          >
+          {{conversion_ontology}}
+                    </textarea
+          >
+        </div>
+      </div>
+      {% endif %}
+      <div class="col-12">
+        <div class="form-group">
+          <label for="textArea3">Prompt Instructions</label>
+          <textarea
+            class="form-control text-field"
+            id="promptInstructions"
+            rows="15"
+            cols="100"
+            spellcheck="false"
+            wrap="on"
+            name="promptInstructions"
+            required
+          >
+            {{prompt}}
+        </textarea>
+        </div>
+      </div>
+    </div>
+    <div class="form-buttons">
+      <button class="cancel-btn" type="button" onclick="goHome(event)">Cancel</button>
+      <button class="save-btn" >Edit</button>
+    </div>
+  </form>
+</div>
+<div class="popup" id="successPopup">
+  <div class="popup-content">
+      <span class="close-btn" onclick="closeSuccessPopup()">&times;</span>
+      <p>Success! Your response has been received and data is stored.</p>
+  </div>
+</div>
+
+<script type="module" src="{{url_for('static',filename='js/popups.js')}}"></script>
+<script type="module" src="{{url_for('static',filename='js/edit_category.js')}}"></script>
+<script>
+   function goHome(event){
+    event.preventDefault(); // prevent the default form submission
+    window.location.href = "/";
+}
+
+</script>
+{% endblock %}

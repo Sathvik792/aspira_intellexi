@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    table {
+        text-align: center;
+        text-wrap: nowrap;
+    }
+
+    .action-icons {
+        max-width: 100px;
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        padding: 0px 10px;
+    }
+
+    .action-icons div {
+        padding: 3px 15px;
+        margin-left: 30%;
+
+    }
+
+    table th {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    @media (min-width: 700px) {
+
+        .container,
+        .container-md,
+        .container-sm {
+            max-width: 70%;
+        }
+    }
+
+    tr:hover {
+        cursor: pointer;
+    }
+</style>
+
+<main>
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-12 text-end">
+                <a href="/add-category"><button class="btn btn-primary">Add Category</button></a>
+            </div>
+        </div>
+        <div class="table-container table-bg">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th class="fs-5">Category Name</th>
+                        <th class="fs-5">uploaded_time</th>
+                        <th class="fs-5" style="padding-right:20px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for each in categories %}
+                    <tr id="doc{{each._id}}">
+                        <td class="fs-5" onclick="goto(`{{each._id}}`)">{{each.doc_category_name}}</td>
+                        {% if each.Uploaded_time %}
+                        <td class="fs-5" onclick="goto(`{{each._id}}`)">{{each.Uploaded_time.strftime('%Y-%m-%d
+                            %H:%M:%S')}}</td>
+                        {% else %}
+                        <td class="fs-5" onclick="goto(`{{each._id}}`)">{{each.uploaded_time.strftime('%Y-%m-%d
+                            %H:%M:%S')}}</td>
+                        {% endif %}
+                        <td class="action-icons">
+                            <div>
+                                <a href="/edit-category/{{each._id}}"><i class="fas fa-edit" title="Edit"></i></a>
+                            </div>
+                            <div onclick="deleteCategory(`{{each._id}}`)" title="Delete File">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </div>
+                            {% if each.extraction_ontology or each.conversion_ontology or each.prompt_instructions %}
+                            <div onclick="downloadCategory(`{{each._id}}`)"
+                                title="Download Extracted and Formatted Text">
+                                <i class="fas fa-download text-primary"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    </a>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+</main>
+
+
+<script>
+    function downloadCategory(id) {
+        window.location.href = `/download_category/${id}/`
+    }
+
+    function deleteCategory(id) {
+        if (confirm("do you want to delete the category?")) {
+            fetch(`/delete-category/${id}/`)
+                .then((response) => response.json())
+                .then(data => {
+                    console.log(data)
+                    if (data.status) {
+                        document.getElementById(`doc${id}`).style.display = 'none'
+                    } else {
+                        alert("There are FIles dependent on this Category")
+                    }
+                })
+        } else {
+            console.log("nice")
+        }
+    }
+    function goto(id) {
+        window.location.href = `/category/${id}`
+    }
+</script>
+
+{% endblock %}

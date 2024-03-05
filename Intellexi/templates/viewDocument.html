@@ -1,0 +1,152 @@
+<!-- home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.success-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 5px solid green;
+}
+
+.popup-content {
+    text-align: center;
+    padding:10px;
+    margin:10px;
+    font-size: 20px;
+}
+
+.close-btn {
+    position: absolute;
+    padding:4px;
+    top: 10px;
+    right: 10px;
+    font-size: 25px;
+    cursor: pointer;
+    color: red;
+}
+
+/* output contet div */
+        .content {
+            display: none;
+            max-width:500px;
+            word-wrap: normal;
+        }
+
+        .content.active-section {
+            display: block;
+            max-width:500px;
+            word-wrap: normal;
+        }
+    .section-label{
+        border-bottom: 3px solid blue;
+    }
+
+</style>
+<main>
+    <div class="container">
+        <form class="custom-form" id="uploadForm">
+            <!-- Your form content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="documentCategory">Document Category Name</label>
+                        <input type="text" class="form-control text-field" name="documentCategory" id="documentCategory" value="{{category.doc_category_name}}" disabled>
+                    </div>
+                </div>
+                <div class="col-12" style="display: none;">
+                    <div class="drag-drop-area" id="dragDropArea">
+                        <label for="fileInput" id="fileInputLabel">Click or drag and drop files here</label>
+                        <!-- Hidden file input -->
+                        <input type="file" accept=".pdf, .xls, .xlsx" id="fileInput" onchange="handleFiles(event)">
+                    </div>
+                    <div id="fileError" style="color: red;"></div>
+                </div>
+            </div>
+          
+            <div class="row-sections quick-shift">
+                <div class="section" id="extractedText">Extracted Text</div>
+                <div class="section" id="formattedText">Formatted Text</div>
+
+                <div class="section" id="downloadbtn" onclick="downloadFile(`{{document._id}}`)" title="Download Extracted and Formatted Text"><i class="fas fa-download"></i></div>
+            </div>
+            
+                <div class="content" id="extractedData" style="max-height: 500px;overflow-y: scroll;max-width:100%;">
+               {{document.extracted_text}}
+                </div>
+                
+                <div class="content" id="formattedData" style="max-height: 500px;overflow-y: scroll;max-width:100%;">
+                    {{document.formatted_data}}
+                </div>
+                <div style="padding-top: 10px;" class="form-buttons">
+                    <button class="cancel-btn" onclick="goHome(event)">Cancel</button>
+                    <button class="save-btn">Save</button>
+                </div>
+        </form>
+    </div>
+    </main>
+ 
+      
+    <script>
+        const downloadBtn=document.getElementById('downloadbtn')
+            const fileLabel = document.getElementById('fileInputLabel');
+            const extractedText=document.getElementById('extractedText')
+            const formattedText=document.getElementById('formattedText')
+            const extractedData=document.getElementById('extractedData')
+            const formattedData=document.getElementById('formattedData')
+            
+            extractedText.addEventListener('click',(e)=>{
+                extractedData.style.display='block'
+                extractedData.classList.toggle('active-section')
+                formattedData.style.display='none'
+                extractedText.classList.toggle('section-label')
+                formattedText.classList.remove('section-label')
+            })
+            extractedText.addEventListener('dblclick',(e)=>{
+                extractedData.style.display='none'
+                formattedData.style.display='none'
+                
+                formattedText.classList.remove('section-label')
+                extractedText.classList.remove('section-label')
+            })
+            formattedText.addEventListener('dblclick',(e)=>{
+                extractedData.style.display='none'
+                formattedData.style.display='none'
+                extractedText.classList.remove('section-label')
+                formattedText.classList.remove('section-label')
+            })
+            formattedText.addEventListener('click',(e)=>{
+                formattedData.style.display='block'
+
+                formattedData.classList.toggle('active-section')
+                extractedData.style.display='none'
+                formattedText.classList.toggle('section-label')
+                extractedText.classList.remove('section-label')
+
+            })
+
+            function downloadFile(id){
+    window.location.href=`/download_multiple_files/${id}/`
+}
+function goHome(event){
+    event.preventDefault(); // prevent the default form submission
+    window.location.href = "/uploaded_docs";
+}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+     <style>
+         table{
+            text-align: center;
+            text-wrap: nowrap;
+         }
+         .action-icons{
+            max-width:100px;
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            padding:0px 10px;
+         }
+         .action-icons div{
+        padding:3px 15px;
+        margin-left:30%;
+        
+         }
+         table th{
+            font-size: 22px;
+            font-weight: 700;
+         }
+         @media (min-width: 700px){
+.container, .container-md, .container-sm {
+max-width: 99%;
+}
+}
+td:hover{cursor: pointer;}
+     </style>
+    
+<main>
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-12 text-end">
+                <a href="/upload_document"><button class="btn btn-primary">Upload Document</button></a>
+            </div>
+        </div>
+        <div class="table-container table-bg">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="fs-5">Category Name</th>
+                        <th class="fs-5">File Type</th>
+                        <th class="fs-5">Uploaded Time</th>
+                        <th class="fs-5">Status</th>
+                        <th class="fs-5" style="padding-right:20px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for each in docs %}
+                    <tr id="doc{{each._id}}">
+                        <td class="fs-5" onclick="goTo('{{each._id}}')">{{each.category_name}}</td>
+                        <td class="fs-5" onclick="goTo('{{each._id}}')">{{each.file_path.split('.')[-1]}}</td>
+                        {% if each.Uploaded_time %}
+                        <td class="fs-5" onclick="goTo('{{each._id}}')">{{each.Uploaded_time}}</td>
+                        {% else %}
+                        <td class="fs-5" onclick="goTo('{{each._id}}')">{{each.uploaded_time}}</td>
+                        {% endif %}
+                        <td class="fs-5" onclick="goTo('{{each._id}}')">
+                            {% if each.extracted_text and each.formatted_data %}
+                                {% if each.formatted_data =="Error formatting data" %}
+                                <span class="badge bg-danger">Error</span>
+                                {% else %}
+                                <span class="badge bg-success">Processed</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="badge bg-danger">Not Processed</span>
+                            {% endif %}
+                        </td>
+                        <td class="action-icons">
+                            <div>
+                                <a href="/document/{{each._id}}"><i class="fas fa-eye" title="View"></i></a>
+                            </div>
+                            <div onclick="deleteFile(`{{each._id}}`)" title="Delete File">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </div>
+                            {% if each.extracted_text or each.formatted_data %}
+                                <div onclick="downloadFile(`{{each._id}}`)" title="Download Extracted and Formatted Text">
+                                    <i class="fas fa-download text-primary"></i>
+                                </div>
+                            {% endif %}
+
+                           
+                        </td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+        </div>
+
+    </div>
+
+    
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+
+function goTo(id){
+window.location.href=(`/document/${id}`)
+}
+
+function downloadFile(id){
+    window.location.href=`/download_multiple_files/${id}/`
+}
+
+function deleteFile(id){
+    if(confirm("do you want to delete the file?")){
+        fetch(`/delete_file/${id}/`)
+    .then((response)=>response.json())
+    .then(data=>{
+        if(data.status){
+            document.getElementById(`doc${id}`).style.display='none'
+        }else{
+            alert("not deleted")
+        }
+    })
+    
+    }
+    
+    }
+    var socket = io.connect('http://' + document.domain + ':' + location.port,{ path: '/socket.io', transports: ['websocket'] });
+
+socket.on('update', function(data) {
+    if(data.status){
+            alert("Formatting data completed now you can view the formatted data.");
+
+        }else{
+            alert("Theres an error formatting the data")
+
+        }
+});
+
+</script>
+    {% endblock %}

@@ -1,0 +1,315 @@
+<!-- home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<style>
+    .success-btn {
+        padding: 15px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #f9f9f9;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        border: 5px solid green;
+    }
+
+    .popup-content {
+        text-align: center;
+        padding: 10px;
+        margin: 10px;
+        font-size: 20px;
+    }
+
+    .close-btn {
+        position: absolute;
+        padding: 4px;
+        top: 10px;
+        right: 10px;
+        font-size: 25px;
+        cursor: pointer;
+        color: red;
+    }
+
+    /* output contet div */
+    .content {
+        display: none;
+        max-width: 500px;
+        word-wrap: normal;
+    }
+
+    .content.active-section {
+        display: block;
+        max-width: 500px;
+        word-wrap: normal;
+    }
+
+    .section-label {
+        border-bottom: 3px solid blue;
+    }
+
+    #app {
+        background: white;
+        text-align: center;
+    }
+
+
+    button {
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    textarea {
+        width: 100%;
+        margin-top: 20px;
+        padding: 10px;
+        font-size: 16px;
+        resize: vertical;
+    }
+
+    #app {
+        text-align: center;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+
+
+    .chat {
+        padding: 10px;
+        margin: 10px;
+        font-size: 16px;
+        width: calc(100% - 20px);
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: border-color 0.3s;
+    }
+
+    .chat:focus {
+        outline: none;
+        border-color: #4CAF50;
+    }
+
+    button.query-button {
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+    .query-button:hover {
+        background-color: #45a049;
+    }
+
+    textarea {
+        width: calc(100% - 20px);
+        margin-top: 20px;
+        padding: 10px;
+        font-size: 16px;
+        resize: vertical;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+    }
+
+    textarea:focus {
+        outline: none;
+        border-color: #4CAF50;
+    }
+</style>
+
+<main>
+    <div class="container">
+        <form class="custom-form" id="uploadForm" onsubmit="submitForm(event)">
+            <!-- Your form content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="documentCategory">Select Documents</label>
+                        <select type="text" class="form-control text-field" name="documentCategory"
+                            id="documentCategory" required multiple onchange="updateDocumentCategory(this)">
+                            <!-- <option value="" class="default-select"> Category</option> -->
+                            {% for category in categories %}
+                            <option value="{{ category._id }}">{{ category.category_name }} - {{category.file_name}}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="agentType"> Choose an Agent Type</label>
+                        <select type="text" class="form-control text-field" name="agentType" id="agentType" required
+                            onchange="updateAgentType(this)">
+                            <option value="" class="default-select">Select an Agent Category</option>
+
+                            <option value="simple-agent">Simple Agent</option>
+                            <option value="query-agent">Query Agent</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div style="padding-top: 10px;" class="form-buttons">
+                <button class="cancel-btn" onclick="resetAndGoHome(event)">Cancel</button>
+                <button class="save-btn">Create Agent</button>
+            </div>
+        </form>
+    </div>
+    <div class="container" id="app">
+        <input class="chat" type="text" id="inputField" placeholder="Enter text...">
+        <button class="query-button" onclick="submitInput()">Ask Agent</button>
+        <textarea id="responseArea" rows="5" readonly></textarea>
+    </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+
+
+<script>
+    let submitted = false
+    function updateDocumentCategory() {
+        // Reset the agentType dropdown to its default state
+        document.getElementById('app').style.display = 'none';
+
+    }
+
+    function updateAgentType() {
+        // Reset the agentType dropdown to its default state
+        if (submitted) {
+            document.getElementById('documentCategory').value = '';
+            document.getElementById('app').style.display = 'none';
+        }
+    }
+
+    async function askQuery(docId, query, agent) {
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/ask_agent?docCategory=${docId}&query=${query}&agent=${agent}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Data:', data);
+            return data;
+        } catch (error) {
+            // Handle errors during the fetch operation
+            console.error('Fetch error:', error);
+            throw error; // Propagate the error to the caller if needed
+        }
+    }
+
+    async function handleSubmit() {
+        try {
+            var selectedOptions = [];
+            for (var i = 0; i < document.getElementById('documentCategory').options.length; i++) {
+                if (document.getElementById('documentCategory').options[i].selected) {
+                    selectedOptions.push(document.getElementById('documentCategory').options[i].value);
+                }
+            }
+            const inputText = document.getElementById('inputField').value;
+            const agent = document.getElementById("agentType").value
+            if (selectedOptions) {
+                show_chat = true;
+                document.getElementById('app').style.display = 'block';
+
+                const agent_res = await askQuery(selectedOptions, inputText, agent);
+
+                if (agent_res) {
+                    var responseArea = document.getElementById('responseArea');
+                    responseArea.value = 'Response: ' + agent_res["response"];
+                }
+            }
+        } catch (error) {
+            // Handle errors
+            console.error('Error:', error);
+        }
+    }
+
+    function submitForm(event) {
+        submitted = true
+        event.preventDefault();
+        var selectedOptions = [];
+        for (var i = 0; i < document.getElementById('documentCategory').options.length; i++) {
+            if (document.getElementById('documentCategory').options[i].selected) {
+                selectedOptions.push(document.getElementById('documentCategory').options[i].value);
+            }
+        }
+        var agent_type = document.getElementById("agentType").value
+
+        console.log(selectedOptions, agent_type)
+        if (selectedOptions) {
+            if (activateIndex(selectedOptions, agent_type)) {
+                show_chat = true;
+                document.getElementById('inputField').value = ''
+                document.getElementById('responseArea').value = ""
+                document.getElementById('app').style.display = 'block';
+            } else {
+                alert("error creating index")
+            }
+        }
+    }
+
+
+    async function activateIndex(document_ids, agent_type) {
+        try {
+            const response = await fetch(`http://localhost:5000/create_agent?document=${document_ids}&agent=${agent_type}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add any additional headers if needed
+                },
+                // You can include query parameters here if necessary
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Data from /data endpoint:', data);
+            return true
+
+            // Handle the data as needed
+        } catch (error) {
+            // Handle errors during the fetch operation
+            console.error('Fetch error:', error);
+            return false
+        }
+    }
+
+    function submitInput() {
+        document.getElementById('responseArea').value = ""
+
+        handleSubmit();
+    }
+
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,379 @@
+<!-- home.html -->
+{% extends 'base.html' %} {% block content %}
+<style>
+  textarea::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  textarea::-webkit-scrollbar-thumb {
+    background-color: blue;
+}
+
+
+  textarea::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+  }
+  form input[type="text"]{
+    font-size: 14px; 
+}
+
+.is-invalid{
+  border:2px solid red;
+}
+.is-valid{
+  border:2px solid green;
+}
+
+/* pop up  */
+/* body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+} */
+
+
+.success-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 5px solid green;
+}
+
+.popup-content {
+    text-align: center;
+    padding:10px;
+    margin:10px;
+    font-size: 20px;
+}
+
+.close-btn {
+    position: absolute;
+    padding:4px;
+    top: 10px;
+    right: 10px;
+    font-size: 25px;
+    cursor: pointer;
+    color: red;
+}
+</style>
+<div class="container">
+ 
+  <form class="custom-form" id="docForm">
+    <div class="row">
+      <div class="col-12">
+        <div class="form-group">
+          <label for="documentCategory">File Type: </label>
+          <span class="text-danger"></span>
+          <select   class="form-control text-field" name="fileType" id="fileType">
+            <option value="" class="default-select">Select the type of File for Extraction</option>
+            <option value="pdf">PDF File</option>
+            <option value="xlsx">Excel File</option>
+             <option value="kyc">KYC Document</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="form-group">
+          <label for="documentCategory">Document Category Name</label>
+          <span id="documentCategoryError" class="text-danger"></span>
+          <input
+            type="text"
+            class="form-control text-field"
+            name="documentCategory"
+            id="documentCategory"
+            required
+          />
+        </div>
+      </div>
+      <div id="additionalDataContainer"></div>
+
+   
+    </div>
+    <div class="form-buttons">
+      <button class="cancel-btn" type="reset">Cancel</button>
+      <button class="save-btn" type="submit">Save</button>
+    </div>
+  </form>
+</div>
+<div class="popup" id="successPopup">
+  <div class="popup-content">
+      <span class="close-btn" onclick="closeSuccessPopup()">&times;</span>
+      <p>Success! Your response has been received and data is stored.</p>
+  </div>
+</div>
+
+<script type="module" src="{{url_for('static',filename='js/popups.js')}}"></script>
+<script type="module" src="{{url_for('static',filename='js/index.js')}}"></script>
+
+<script>
+
+const extraction_pdf_ontology_div=`
+      <div class="col-12" id="extractionDiv">
+        <div class="form-group">
+          <label for="textArea1">Extraction Ontology</label>
+          <textarea
+            class="form-control text-field"
+            id="pdfextractionOntology"
+            rows="15"
+            spellcheck="false"
+            wrap="off"
+            name="extractionOntology"
+            required
+          >
+{
+    "ContractTypeA": [
+        {"Section": "Rates for the Indemnity, PPA, and HMO Blue Products", "StartKeyword": "The applicable Plan and Anna Jaques agree to the Base Rates, Negotiated Rate Increases, Observation Per Diem, Base Allowable Fee Multipliers, Outpatient Base PAFs, and Date 
+        Establishing Base Charges for Outpatient Services below. ", "StopKeyword": ". Date Establishing Base Charges for Outpatient Services: 11/9/2020"},
+    ],
+    "ContractTypeB": [
+        {"Section": "Rates for the Indemnity, PPA, and HMO Blue Products BID Milton", "StartKeyword": "The applicable Plan and BID Milton agree to the Base Rates, Negotiated Rate Increases, Observation Per Diem, Base Allowable Fee Multipliers, Outpatient Base PAFs, and Date 
+        Establishing Base Charges for Outpatient Services below", "StopKeyword": ". Date Establishing Base Charges for Outpatient Services: 11/6/2020"},
+    ],
+}
+                    </textarea
+          >
+        </div>
+      </div>`
+const excel_prompt_div=`
+    <div class="col-12" id="excel_prompt">
+        <div class="form-group">
+          <label for="textArea3">Prompt Instructions</label>
+          <textarea
+            class="form-control text-field"
+            id="excelpromptInstructions"
+            rows="15"
+            cols="100"
+            spellcheck="false"
+            wrap="on"
+            name="promptInstructions"
+            required
+          >
+You are a medical insurance expert who understands Json format. Convert the given JSON format into a structured format to handle the rates for different service categories.
+The different Rate categories should be converted into a single array of sub-json called Rate-Categories.
+Follow the steps as listed below:
+1. Find the json elements which are related to a single Service category and identify the different parts of the rate including the rate, the rate type of calculation, any additional notes etc.
+2. After understanding and segragating the related json elements, create the new json with the identified parts 
+containing the following sub elements like the example 
+"Service Category":   "CPT",
+"Rate":  The rate applicable for the service as given in the input with currency like $,
+"Rate Calculation Type": % of charges or direct rate or per unit(This can be part of notes also so should be derived from there as needed),
+"Notes": As given in the contract for the service,
+"Codes": The list of codes applicable or having same charges and conditions.
+Example 1: If Inputs is 'CPT: 90791': '378.099575', 'CPT: 90791 Notes': 'Per Unit'
+The output should include  
+"Service Category":   "CPT", 
+"Rate": '378.099575', 
+"Rate Calculation Type":'Per Unit', 
+"Notes": 'Per Unit',
+"Codes":["CPT-90791"]
+Example 2: Is Input is 'CPT: 90840': '74.1% of charges'
+The output should include
+"Service Category":   "CPT", 
+"Rate": '74.1%', 
+"Rate Calculation Type":'% of charges', 
+"Notes": None,
+"Codes":["CPT-90840"]
+Follow the similar  pattern for all categories.
+This should be applied to all Rate Categories given as CPT codes directly under single sub json.
+Give complete details with complete list of all codes applicable for any ranges given. 
+Replace the range of codes with the complete list of codes for each rate category.
+Take the reference data as given from the input. 
+Do not create any additional or incorrect Rates, only perform the restructuring.
+          </textarea>
+        </div>
+      </div>`
+const pdf_prompt_div=`
+<div class="col-12" id="pdf_prompt">
+        <div class="form-group">
+          <label for="textArea3">Prompt Instructions</label>
+          <textarea
+            class="form-control text-field"
+            id="pdfpromptInstructions"
+            rows="15"
+            cols="100"
+            spellcheck="false"
+            wrap="on"
+            name="promptInstructions"
+            required
+          >
+Convert the extracted contract content into structured JSON following these instructions:
+1. Identify Indemnity, PPA, and HMO as main headings. Extract RY21 Base Rates, RY21 Negotiated Rate Increase, RY22 Negotiated Rate Increase, RY23 Negotiated Rate Increase under each heading.
+2. For inpatient details, include subcategories like Standard Rate (APR-DRG), Behavioral Health and Substance Use Disorder, short stays, and transfers. For outpatient details, focus on Outpatient Base Allowable Fee Multipliers.
+3. Rates are in $. Conversion ratio is given in decimal, and negotiated rate increase is in %.
+4. Use 3 sets of columns, each with 4 columns. If a row has only 3 values, it applies to the first subcolumn. Do not repeat values for other columns if not mentioned.
+5. Include Conversion Ratio separately for Behavioral Health and Substance Use Disorder, short stays, and transfer, beside the label under Inpatient.
+6. Extract data only for mentioned sub-categories.
+7. Output in JSON format.Below is sample json format. Extraction should take all the sub-categories given in the input ONLY.
+          </textarea>
+        </div>
+      </div>`
+const conversion_ontology_div=`
+<div class="col-12">
+        <div class="form-group">
+          <label for="textArea2">Conversion Ontology</label>
+          <textarea
+            class="form-control text-field"
+            id="pdfconversionOntology"
+            name="conversionOntology"
+            rows="15"
+            spellcheck="false"
+            wrap="off"
+            required
+          >
+{
+  "contractHeader": {
+    "ID": "XXX",
+    "contractID": "XXX",
+    "companyCode": "XXX",
+    "hospital": "XXX",
+    "plan": "XXX",
+    "product": "XXX",
+    "billPlanCode": "XXX",
+    "effectiveDate": "XXX",
+    "year": "XXX",
+    "typeOfAgreement": "XXX",
+    "additionalInfo": "XXX",
+    "contractStatus": "XXX",
+    "increase": "XXX",
+    "trendFactor": "XXX",
+    "allPercentOfCharges": "XXX",
+    "billingTimeFrames": "XXX",
+    "currentPlan": {
+    "indemnity": {
+      "inpatient": {
+          "rateCategories": [
+              {
+                "serviceCategory": "Behavioral Health and Substance Use Disorder",
+                "APR-DRG": "XXX",
+                "baseRate": "XXX",
+                "rateCalculationType": "XXX",
+                "conversionRatio": "XXX",
+                "baseRates": "XXX",
+                "notes": "XXX",
+                "codes": ["XXX"],
+            },
+            "similar structure as above service Category"
+        ]
+      },
+      "outpatient": {
+          "rateCategories": [
+              {
+                  "serviceCategory": "XXX",
+                  "APR-DRG": "Yes",
+                  "baseRate": "$15,983",
+                  "rateCalculationType": "XXX",
+                  "conversionRatio": "0.183029",
+                  "baseRates": "$2,925",
+                  "notes": "XXX",
+                  "codes": ["XXX"],
+              },
+              {"serviceCategory": "Same as above service category"},
+          ]
+      },
+  },
+  "PPA": ["Similar structure as Indemnity"],
+  "HMO": ["Similar structure as Indemnity"]
+    },
+  },
+}
+                    </textarea
+          >
+        </div>
+      </div>`
+
+const conversion_kyc_ontology=`
+      <div class="col-12">
+        <div class="form-group">
+          <label for="textArea2">Conversion Ontology</label>
+          <textarea
+            class="form-control text-field"
+            id="kycconversionOntology"
+            name="conversionOntology"
+            rows="15"
+            spellcheck="false"
+            wrap="off"
+            required
+          >
+{
+    "full_name":"The name of the user from the data",
+    "date_of_birth": "Date of birth of the user",
+    "gender" : "Gender of the person",
+    "aadhar_number":"The aadhar number of the user is a 12 digit numerical value",
+    "address":"The complete address of the user provided in the data.",
+    "mobile_number":"The mobile number of the user os a 10 dogit numerical value"
+}
+                    </textarea
+          >
+        </div>
+      </div>`
+const kyc_prompt_div=`
+<div class="col-12" id="pdf_prompt">
+        <div class="form-group">
+          <label for="textArea3">Prompt Instructions</label>
+          <textarea
+            class="form-control text-field"
+            id="kycpromptInstructions"
+            rows="15"
+            cols="100"
+            spellcheck="false"
+            wrap="on"
+            name="promptInstructions"
+            required
+          >"
+You are an intelligent assistant tasked to identify and extract user details from the provided data of the user.
+
+1. Identify and Extract the Users Full name or the name of the user from provided content.
+2. Identify and extract the Users Date of birth.
+3. Identify and extract the Gender of the User.
+4. Identify and extract the 16 digit user aadhar number.
+5. Identify and etxract the complete address of the user.
+6. Identify and extract the 10 digit mobile number of the user.
+7. Strictly follow the above instructions and finally return an output json that complies with the provided format instructions.
+8. Validate the value of each field if any of the value doesn't match the expected type of the value return as empty value but do not make up any data.
+
+Make Sure to Identify the appropriate and correct values for each field required, also make sure to identify the entity type of each value and match with the correct value for each.   
+          </textarea>
+        </div>
+      </div>`
+      document.getElementById('fileType').addEventListener('change', function () {
+        // Get the selected file type
+        const fileType = document.getElementById('fileType').value;
+        appendAdditionalData(fileType);
+    });
+      
+      function appendAdditionalData(optionValue) {
+        const container = document.getElementById('additionalDataContainer');
+        container.innerHTML = '';
+        switch (optionValue) {
+            case 'pdf':
+                container.innerHTML = extraction_pdf_ontology_div  + conversion_ontology_div+ pdf_prompt_div;
+                break;
+            case 'xlsx':
+                container.innerHTML = conversion_ontology_div+excel_prompt_div
+                break;
+            case 'kyc':
+              container.innerHTML= conversion_kyc_ontology + kyc_prompt_div;
+                default:
+                break;
+        }
+    }
+</script>
+{% endblock %}
